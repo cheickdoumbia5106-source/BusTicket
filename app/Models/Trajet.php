@@ -20,6 +20,8 @@ class Trajet extends Model
 
     protected $casts = [
         'date_depart' => 'date',
+        'heure_arrivee' => 'datetime',
+        'heure_depart' => 'datetime',
     ];
 
     public function villeDepart(): BelongsTo
