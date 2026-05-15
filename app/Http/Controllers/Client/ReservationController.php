@@ -14,14 +14,24 @@ class ReservationController extends Controller
 {
     public function prepare(Request $request)
     {
+        // Vérifier que l'utilisateur est connecté
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Veuillez vous connecter pour réserver.');
+        }
+
         $request->validate([
             'trajet_id' => 'required|exists:trajets,id',
-            'sieges' => 'required|array|min:1',
-            'sieges.*' => 'exists:sieges,id',
+            'sieges' => 'required|json',
         ]);
 
         $trajet = Trajet::findOrFail($request->trajet_id);
-        $sieges = Siege::whereIn('id', $request->sieges)->get();
+        $siegeIds = json_decode($request->sieges, true);
+        
+        if (empty($siegeIds)) {
+            return back()->with('error', 'Veuillez sélectionner au moins un siège.');
+        }
+        
+        $sieges = Siege::whereIn('id', $siegeIds)->get();
         
         // Vérifier que les sièges sont toujours disponibles
         $siegesReserves = $trajet->reservations()
@@ -45,7 +55,7 @@ class ReservationController extends Controller
         session([
             'reservation_temp' => [
                 'trajet_id' => $trajet->id,
-                'sieges' => $sieges->pluck('id')->toArray(),
+                'sieges' => $siegeIds,
                 'montant_total' => $montantTotal,
                 'expires_at' => now()->addMinutes(15),
             ]
@@ -53,7 +63,7 @@ class ReservationController extends Controller
 
         return redirect()->route('reservation.recap');
     }
-
+    
     public function recap()
     {
         $temp = session('reservation_temp');

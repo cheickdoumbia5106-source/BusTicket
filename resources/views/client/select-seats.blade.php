@@ -118,6 +118,9 @@
                         Continuer la réservation
                     </button>
                 </form>
+                
+                <!-- Message de débogage -->
+                <div id="debug-message" class="mt-4 text-xs text-gray-500 text-center hidden"></div>
             </div>
         </div>
     </div>
@@ -125,21 +128,43 @@
 
 <script>
     let selectedSeats = [];
+    
+    // Debug function
+    function debugLog(message) {
+        console.log(message);
+        const debugDiv = document.getElementById('debug-message');
+        if (debugDiv) {
+            debugDiv.classList.remove('hidden');
+            debugDiv.innerHTML = '🐛 ' + message;
+            setTimeout(() => {
+                debugDiv.classList.add('hidden');
+            }, 2000);
+        }
+    }
 
     function toggleSeat(button) {
-        if (button.disabled) return;
+        if (button.disabled) {
+            debugLog('Ce siège est déjà réservé');
+            return;
+        }
         
         const seatId = button.getAttribute('data-seat');
         const seatNumber = button.getAttribute('data-number');
         
+        debugLog(`Siège ${seatNumber} cliqué - ID: ${seatId}`);
+        
         if (selectedSeats.includes(seatId)) {
+            // Désélectionner
             selectedSeats = selectedSeats.filter(id => id !== seatId);
             button.classList.remove('bg-orange-500');
             button.classList.add('bg-green-500');
+            debugLog(`Siège ${seatNumber} désélectionné`);
         } else {
+            // Sélectionner
             selectedSeats.push(seatId);
             button.classList.remove('bg-green-500');
             button.classList.add('bg-orange-500');
+            debugLog(`Siège ${seatNumber} sélectionné`);
         }
         
         updateSummary();
@@ -150,9 +175,11 @@
         const unitPrice = {{ $trajet->prix }};
         const totalPrice = seatCount * unitPrice;
         
+        // Mettre à jour l'affichage
         document.getElementById('seat-count').textContent = seatCount;
         document.getElementById('total-price').textContent = totalPrice.toLocaleString('fr-FR') + ' FCFA';
         
+        // Mettre à jour la liste des sièges sélectionnés
         const seatsListDiv = document.getElementById('selected-seats-list');
         if (seatCount > 0) {
             const seatNumbers = [];
@@ -170,17 +197,31 @@
             seatsListDiv.innerHTML = '<p class="text-gray-500 text-sm">Aucun siège sélectionné</p>';
         }
         
+        // Activer/désactiver le bouton
         const submitBtn = document.getElementById('submit-btn');
         const seatsInput = document.getElementById('selected-seats-input');
         
         if (seatCount > 0) {
             submitBtn.disabled = false;
             seatsInput.value = JSON.stringify(selectedSeats);
+            debugLog(`Bouton activé - ${seatCount} siège(s) sélectionné(s)`);
         } else {
             submitBtn.disabled = true;
             seatsInput.value = '';
+            debugLog('Bouton désactivé - aucun siège sélectionné');
         }
     }
+    
+    // Initialisation au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        debugLog('Page chargée - cliquez sur les sièges verts');
+        
+        // Vérifier si la route existe
+        const form = document.getElementById('reservation-form');
+        if (form) {
+            console.log('Formulaire trouvé, action:', form.action);
+        }
+    });
 </script>
 
 <style>
