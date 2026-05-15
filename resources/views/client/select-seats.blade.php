@@ -4,11 +4,19 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800">Choisissez vos sièges</h1>
-        <div class="mt-2 text-gray-600">
-            <p>{{ $trajet->villeDepart->nom }} → {{ $trajet->villeArrivee->nom }}</p>
-            <p>Date : {{ $trajet->date_depart->format('d/m/Y') }} à {{ $trajet->heure_depart->format('H:i') }}</p>
-            <p>Compagnie : {{ $trajet->bus->compagnie }} - {{ $trajet->bus->nom }}</p>
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm opacity-90">Trajet sélectionné</p>
+                    <h1 class="text-2xl font-bold">{{ $trajet->villeDepart->nom }} → {{ $trajet->villeArrivee->nom }}</h1>
+                    <p class="mt-1">{{ $trajet->date_depart->format('d/m/Y') }} à {{ $trajet->heure_depart->format('H:i') }}</p>
+                    <p class="text-sm opacity-80">{{ $trajet->bus->compagnie }} - {{ $trajet->bus->nom }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm opacity-90">Prix unitaire</p>
+                    <p class="text-3xl font-bold">{{ number_format($trajet->prix, 0, ',', ' ') }} FCFA</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -18,11 +26,10 @@
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <div class="text-center mb-6">
                     <div class="inline-block bg-gray-200 rounded-lg px-6 py-2">
-                        <p class="font-semibold">Avant du bus 🚌</p>
+                        <p class="font-semibold">🚌 Avant du bus</p>
                     </div>
                 </div>
 
-                <!-- Grille des sièges -->
                 <div class="overflow-x-auto">
                     <div class="inline-block min-w-full">
                         @php
@@ -65,7 +72,7 @@
                         <span class="text-sm">Libre</span>
                     </div>
                     <div class="flex items-center">
-                        <div class="w-6 h-6 bg-yellow-500 rounded mr-2"></div>
+                        <div class="w-6 h-6 bg-orange-500 rounded mr-2"></div>
                         <span class="text-sm">Sélectionné</span>
                     </div>
                     <div class="flex items-center">
@@ -88,7 +95,7 @@
                 <div class="border-t pt-4 mt-4">
                     <div class="flex justify-between mb-2">
                         <span class="font-semibold">Nombre de sièges :</span>
-                        <span id="seat-count" class="font-bold text-indigo-600">0</span>
+                        <span id="seat-count" class="font-bold text-orange-600">0</span>
                     </div>
                     <div class="flex justify-between mb-4">
                         <span class="font-semibold">Prix unitaire :</span>
@@ -96,7 +103,7 @@
                     </div>
                     <div class="flex justify-between text-xl mb-6">
                         <span class="font-bold">Total :</span>
-                        <span id="total-price" class="font-bold text-indigo-600">0 FCFA</span>
+                        <span id="total-price" class="font-bold text-orange-600">0 FCFA</span>
                     </div>
                 </div>
 
@@ -106,8 +113,8 @@
                     <input type="hidden" name="sieges" id="selected-seats-input" value="">
                     
                     <button type="submit" id="submit-btn" disabled
-                            class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold 
-                                   hover:bg-indigo-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-semibold 
+                                   hover:from-orange-600 hover:to-orange-700 transition disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg">
                         Continuer la réservation
                     </button>
                 </form>
@@ -120,22 +127,19 @@
     let selectedSeats = [];
 
     function toggleSeat(button) {
-        // Ne rien faire si le siège est déjà occupé
         if (button.disabled) return;
         
         const seatId = button.getAttribute('data-seat');
         const seatNumber = button.getAttribute('data-number');
         
         if (selectedSeats.includes(seatId)) {
-            // Désélectionner
             selectedSeats = selectedSeats.filter(id => id !== seatId);
-            button.classList.remove('bg-yellow-500');
+            button.classList.remove('bg-orange-500');
             button.classList.add('bg-green-500');
         } else {
-            // Sélectionner
             selectedSeats.push(seatId);
             button.classList.remove('bg-green-500');
-            button.classList.add('bg-yellow-500');
+            button.classList.add('bg-orange-500');
         }
         
         updateSummary();
@@ -146,11 +150,9 @@
         const unitPrice = {{ $trajet->prix }};
         const totalPrice = seatCount * unitPrice;
         
-        // Mettre à jour l'affichage
         document.getElementById('seat-count').textContent = seatCount;
         document.getElementById('total-price').textContent = totalPrice.toLocaleString('fr-FR') + ' FCFA';
         
-        // Mettre à jour la liste des sièges sélectionnés
         const seatsListDiv = document.getElementById('selected-seats-list');
         if (seatCount > 0) {
             const seatNumbers = [];
@@ -161,14 +163,13 @@
             });
             seatsListDiv.innerHTML = `
                 <div class="flex flex-wrap gap-2">
-                    ${seatNumbers.map(num => `<span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-semibold">Siège ${num}</span>`).join('')}
+                    ${seatNumbers.map(num => `<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold">Siège ${num}</span>`).join('')}
                 </div>
             `;
         } else {
             seatsListDiv.innerHTML = '<p class="text-gray-500 text-sm">Aucun siège sélectionné</p>';
         }
         
-        // Activer/désactiver le bouton de soumission
         const submitBtn = document.getElementById('submit-btn');
         const seatsInput = document.getElementById('selected-seats-input');
         
