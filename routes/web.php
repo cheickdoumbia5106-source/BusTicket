@@ -52,6 +52,15 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/mon-compte/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::delete('/reservation/{reservation}/annuler', [ProfileController::class, 'cancelReservation'])->name('reservation.cancel');
 });
+    // ======================
+    // DASHBOARD REDIRECTION
+    // ======================
+    Route::middleware(['auth'])->get('/dashboard', function () {
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('home');
+    })->name('dashboard');
 
 // ======================
 // ROUTES ADMINISTRATION (AUTH + ADMIN)
@@ -59,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Dashboard
+            
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Gestion des villes (CRUD complet)

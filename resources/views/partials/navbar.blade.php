@@ -19,18 +19,6 @@
                    class="text-gray-700 hover:text-orange-600 transition-colors {{ request()->routeIs('home') ? 'text-orange-600 font-semibold' : '' }}">
                     Accueil
                 </a>
-                <a href="#" 
-                   class="text-gray-700 hover:text-orange-600 transition-colors">
-                    Destinations
-                </a>
-                <a href="#" 
-                   class="text-gray-700 hover:text-orange-600 transition-colors">
-                    Compagnies
-                </a>
-                <a href="{{ route('profile') }}" 
-                   class="text-gray-700 hover:text-orange-600 transition-colors">
-                    Mes Voyages
-                </a>
             </div>
 
             <!-- Actions -->

@@ -1,98 +1,97 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Détail de la réservation')
+@section('title', 'Détail réservation #'.$reservation->reference)
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-lg shadow">
-        <div class="border-b px-6 py-4">
-            <h3 class="font-semibold text-gray-800">🎫 Réservation #{{ $reservation->reference }}</h3>
+    <div class="card-futur rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-white/10">
+            <h3 class="font-semibold text-xl text-white flex items-center gap-2"><i class="fas fa-ticket-alt text-orange-500"></i> Réservation #{{ $reservation->reference }}</h3>
         </div>
         
-        <div class="p-6">
-            <!-- Informations client -->
-            <div class="mb-6">
-                <h4 class="font-semibold text-gray-700 mb-3">👤 Client</h4>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <p><strong>Nom :</strong> {{ $reservation->user->name }}</p>
-                    <p><strong>Email :</strong> {{ $reservation->user->email }}</p>
-                    <p><strong>Membre depuis :</strong> {{ $reservation->user->created_at->format('d/m/Y') }}</p>
+        <div class="p-6 space-y-6">
+            <!-- Client -->
+            <div class="bg-white/5 rounded-2xl p-5">
+                <h4 class="text-white font-semibold mb-3 flex items-center gap-2"><i class="fas fa-user"></i> Client</h4>
+                <div class="grid grid-cols-2 gap-4 text-gray-300">
+                    <p><span class="text-gray-500">Nom :</span> {{ $reservation->user->name }}</p>
+                    <p><span class="text-gray-500">Email :</span> {{ $reservation->user->email }}</p>
+                    <p><span class="text-gray-500">Membre depuis :</span> {{ $reservation->user->created_at->format('d/m/Y') }}</p>
                 </div>
             </div>
             
-            <!-- Informations trajet -->
-            <div class="mb-6">
-                <h4 class="font-semibold text-gray-700 mb-3">🚌 Trajet</h4>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <p><strong>Itinéraire :</strong> {{ $reservation->trajet->villeDepart->nom }} → {{ $reservation->trajet->villeArrivee->nom }}</p>
-                    <p><strong>Date :</strong> {{ $reservation->trajet->date_depart->format('d/m/Y') }}</p>
-                    <p><strong>Heure départ :</strong> {{ $reservation->trajet->heure_depart->format('H:i') }}</p>
-                    <p><strong>Heure arrivée :</strong> {{ $reservation->trajet->heure_arrivee->format('H:i') }}</p>
-                    <p><strong>Bus :</strong> {{ $reservation->trajet->bus->nom }} ({{ $reservation->trajet->bus->compagnie }})</p>
+            <!-- Trajet -->
+            <div class="bg-white/5 rounded-2xl p-5">
+                <h4 class="text-white font-semibold mb-3 flex items-center gap-2"><i class="fas fa-route"></i> Trajet</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-gray-300">
+                    <p><span class="text-gray-500">Départ :</span> {{ $reservation->trajet->villeDepart->nom }}</p>
+                    <p><span class="text-gray-500">Arrivée :</span> {{ $reservation->trajet->villeArrivee->nom }}</p>
+                    <p><span class="text-gray-500">Date :</span> {{ $reservation->trajet->date_depart->format('d/m/Y') }}</p>
+                    <p><span class="text-gray-500">Heure :</span> {{ $reservation->trajet->heure_depart->format('H:i') }}</p>
                 </div>
             </div>
             
             <!-- Sièges -->
-            <div class="mb-6">
-                <h4 class="font-semibold text-gray-700 mb-3">💺 Sièges réservés</h4>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex flex-wrap gap-2">
-                        @foreach($reservation->sieges as $siege)
-                            <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-semibold">
-                                Siège {{ $siege->numero_siege }}
-                            </span>
-                        @endforeach
-                    </div>
+            <div class="bg-white/5 rounded-2xl p-5">
+                <h4 class="text-white font-semibold mb-3 flex items-center gap-2"><i class="fas fa-chair"></i> Sièges</h4>
+                <div class="flex flex-wrap gap-2">
+                    @foreach($reservation->sieges as $siege)
+                    <span class="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-sm font-medium">Siège {{ $siege->numero_siege }}</span>
+                    @endforeach
                 </div>
             </div>
             
             <!-- Paiement -->
-            <div class="mb-6">
-                <h4 class="font-semibold text-gray-700 mb-3">💰 Paiement</h4>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <p><strong>Montant total :</strong> <span class="text-2xl font-bold text-indigo-600">{{ number_format($reservation->montant_total, 0, ',', ' ') }} FCFA</span></p>
-                    <p><strong>Mode de paiement :</strong> {{ $reservation->paiement->mode_paiement == 'simule' ? 'Paiement en ligne' : 'Paiement à l\'embarquement' }}</p>
-                    <p><strong>Statut paiement :</strong> 
-                        @if($reservation->paiement->statut == 'paye')
-                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Payé</span>
-                        @else
-                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">En attente</span>
-                        @endif
-                    </p>
+            <div class="bg-white/5 rounded-2xl p-5">
+                <h4 class="text-white font-semibold mb-3 flex items-center gap-2"><i class="fas fa-credit-card"></i> Paiement</h4>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-300">Montant total</p>
+                        <p class="text-3xl font-bold text-orange-400">{{ number_format($reservation->montant_total, 0, ',', ' ') }} FCFA</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-300">Statut paiement</p>
+                        <span class="px-3 py-1 rounded-full text-sm {{ $reservation->paiement->statut == 'paye' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400' }}">{{ $reservation->paiement->statut == 'paye' ? 'Payé' : 'En attente' }}</span>
+                    </div>
                 </div>
             </div>
             
-            <!-- Changement de statut -->
-            <div class="mb-6">
-                <h4 class="font-semibold text-gray-700 mb-3">📝 Modifier le statut</h4>
-                <form action="{{ route('admin.reservations.status', $reservation) }}" method="POST" class="flex gap-3">
-                    @csrf
-                    @method('PUT')
-                    <select name="statut" class="border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="en_attente" {{ $reservation->statut == 'en_attente' ? 'selected' : '' }}>En attente</option>
-                        <option value="confirmee" {{ $reservation->statut == 'confirmee' ? 'selected' : '' }}>Confirmée</option>
-                        <option value="annulee" {{ $reservation->statut == 'annulee' ? 'selected' : '' }}>Annulée</option>
-                    </select>
-                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+            <!-- Mise à jour du statut -->
+            <div class="bg-white/5 rounded-2xl p-6">
+                <h4 class="text-white font-semibold mb-4">Changer le statut</h4>
+                <form action="{{ route('admin.reservations.status', $reservation) }}" method="POST" class="flex gap-4 items-end">
+                    @csrf @method('PUT')
+                    <div class="flex-1">
+                        <select name="statut" 
+                                class="w-full px-5 py-3.5 rounded-2xl bg-slate-800 border border-white/20 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition">
+                            <option value="en_attente" class="bg-slate-800 text-white" {{ $reservation->statut == 'en_attente' ? 'selected' : '' }}>En attente</option>
+                            <option value="confirmee" class="bg-slate-800 text-white" {{ $reservation->statut == 'confirmee' ? 'selected' : '' }}>Confirmée</option>
+                            <option value="annulee" class="bg-slate-800 text-white" {{ $reservation->statut == 'annulee' ? 'selected' : '' }}>Annulée</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary px-8 py-3.5 rounded-2xl text-white font-medium">
                         Mettre à jour
-                    </button>
-                </form>
-            </div>
-            
-            <div class="flex justify-end gap-3">
-                <a href="{{ route('admin.reservations.index') }}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
-                    Retour
-                </a>
-                <form action="{{ route('admin.reservations.destroy', $reservation) }}" method="POST" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition" 
-                            onclick="return confirm('Supprimer cette réservation ?')">
-                        Supprimer
                     </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Style pour les options des selects au survol */
+    select option:hover,
+    select option:focus,
+    select option:checked {
+        background: #f97316 !important;
+        color: white !important;
+    }
+    
+    /* Pour Chrome/Safari/Edge */
+    select:focus option:checked,
+    select:focus option:hover {
+        background: #f97316 !important;
+        color: white !important;
+    }
+</style>
 @endsection

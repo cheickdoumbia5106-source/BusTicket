@@ -1,89 +1,154 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Modifier un trajet')
+@section('title', 'Modifier le trajet')
 
 @section('content')
-<div class="bg-white rounded-lg shadow max-w-3xl mx-auto">
-    <div class="border-b px-6 py-4">
-        <h3 class="font-semibold text-gray-800">✏️ Modifier le trajet</h3>
+<div class="max-w-3xl mx-auto">
+    <div class="card-futur rounded-3xl p-8">
+        <h3 class="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+            <i class="fas fa-route text-orange-500"></i> 
+            Modifier le trajet
+        </h3>
+        
+        <form action="{{ route('admin.trajets.update', $trajet) }}" method="POST">
+            @csrf
+            @method('PUT')
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Ville Départ -->
+                <div>
+                    <label class="block text-slate-300 font-medium mb-2">Ville de départ</label>
+                    <select name="ville_depart_id" required 
+                            class="w-full px-5 py-3.5 rounded-2xl bg-slate-800 border border-white/20 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition">
+                        <option value="" class="bg-slate-800 text-slate-400">Sélectionner une ville</option>
+                        @foreach($villes as $ville)
+                            <option value="{{ $ville->id }}" class="bg-slate-800 text-white"
+                                {{ old('ville_depart_id', $trajet->ville_depart_id) == $ville->id ? 'selected' : '' }}>
+                                {{ $ville->nom }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Ville Arrivée -->
+                <div>
+                    <label class="block text-slate-300 font-medium mb-2">Ville d'arrivée</label>
+                    <select name="ville_arrivee_id" required 
+                            class="w-full px-5 py-3.5 rounded-2xl bg-slate-800 border border-white/20 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition">
+                        <option value="" class="bg-slate-800 text-slate-400">Sélectionner une ville</option>
+                        @foreach($villes as $ville)
+                            <option value="{{ $ville->id }}" class="bg-slate-800 text-white"
+                                {{ old('ville_arrivee_id', $trajet->ville_arrivee_id) == $ville->id ? 'selected' : '' }}>
+                                {{ $ville->nom }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Bus -->
+                <div>
+                    <label class="block text-slate-300 font-medium mb-2">Bus</label>
+                    <select name="bus_id" required 
+                            class="w-full px-5 py-3.5 rounded-2xl bg-slate-800 border border-white/20 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition">
+                        <option value="" class="bg-slate-800 text-slate-400">Sélectionner un bus</option>
+                        @foreach($buses as $bus)
+                            <option value="{{ $bus->id }}" class="bg-slate-800 text-white"
+                                {{ old('bus_id', $trajet->bus_id) == $bus->id ? 'selected' : '' }}>
+                                {{ $bus->nom }} - {{ $bus->compagnie }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Date de départ -->
+                <div>
+                    <label class="block text-slate-300 font-medium mb-2">Date de départ</label>
+                    <input type="date" name="date_depart" 
+                           value="{{ old('date_depart', $trajet->date_depart instanceof \Carbon\Carbon ? $trajet->date_depart->format('Y-m-d') : $trajet->date_depart) }}" 
+                           class="w-full px-5 py-3.5 rounded-2xl bg-slate-800 border border-white/20 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition" 
+                           required>
+                </div>
+
+                <!-- Heure de départ -->
+                <div>
+                    <label class="block text-slate-300 font-medium mb-2">Heure de départ</label>
+                    <input type="time" name="heure_depart" 
+                           value="{{ old('heure_depart', $trajet->heure_depart instanceof \Carbon\Carbon ? $trajet->heure_depart->format('H:i') : $trajet->heure_depart) }}" 
+                           class="w-full px-5 py-3.5 rounded-2xl bg-slate-800 border border-white/20 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition" 
+                           required>
+                </div>
+
+                <!-- Heure d'arrivée -->
+                <div>
+                    <label class="block text-slate-300 font-medium mb-2">Heure d'arrivée</label>
+                    <input type="time" name="heure_arrivee" 
+                           value="{{ old('heure_arrivee', $trajet->heure_arrivee instanceof \Carbon\Carbon ? $trajet->heure_arrivee->format('H:i') : $trajet->heure_arrivee) }}" 
+                           class="w-full px-5 py-3.5 rounded-2xl bg-slate-800 border border-white/20 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition" 
+                           required>
+                </div>
+
+                <!-- Prix -->
+                <div class="md:col-span-2">
+                    <label class="block text-slate-300 font-medium mb-2">Prix (FCFA)</label>
+                    <input type="number" name="prix" 
+                           value="{{ old('prix', $trajet->prix) }}" 
+                           class="w-full px-5 py-3.5 rounded-2xl bg-slate-800 border border-white/20 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition" 
+                           min="0" step="500" required>
+                </div>
+
+            </div>
+
+            <div class="flex justify-end gap-4 mt-10">
+                <a href="{{ route('admin.trajets.index') }}" 
+                   class="px-6 py-3 rounded-2xl bg-white/10 text-slate-300 hover:bg-white/20 transition font-medium">
+                    Annuler
+                </a>
+                <button type="submit" class="btn-primary px-8 py-3 rounded-2xl text-white font-medium">
+                    Mettre à jour le trajet
+                </button>
+            </div>
+        </form>
     </div>
-    
-    <form action="{{ route('admin.trajets.update', $trajet) }}" method="POST" class="p-6">
-        @csrf
-        @method('PUT')
-        
-        <div class="grid grid-cols-2 gap-4">
-            <div class="mb-4">
-                <label class="block text-gray-700 font-medium mb-2">Ville de départ</label>
-                <select name="ville_depart_id" class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-                    @foreach($villes as $ville)
-                        <option value="{{ $ville->id }}" {{ old('ville_depart_id', $trajet->ville_depart_id) == $ville->id ? 'selected' : '' }}>
-                            {{ $ville->nom }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-gray-700 font-medium mb-2">Ville d'arrivée</label>
-                <select name="ville_arrivee_id" class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-                    @foreach($villes as $ville)
-                        <option value="{{ $ville->id }}" {{ old('ville_arrivee_id', $trajet->ville_arrivee_id) == $ville->id ? 'selected' : '' }}>
-                            {{ $ville->nom }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-        
-        <div class="mb-4">
-            <label class="block text-gray-700 font-medium mb-2">Bus</label>
-            <select name="bus_id" class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-                @foreach($buses as $bus)
-                    <option value="{{ $bus->id }}" {{ old('bus_id', $trajet->bus_id) == $bus->id ? 'selected' : '' }}>
-                        {{ $bus->nom }} - {{ $bus->compagnie }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-            <div class="mb-4">
-                <label class="block text-gray-700 font-medium mb-2">Date de départ</label>
-                <input type="date" name="date_depart" value="{{ old('date_depart', $trajet->date_depart->format('Y-m-d')) }}" 
-                       class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-gray-700 font-medium mb-2">Heure de départ</label>
-                <input type="time" name="heure_depart" value="{{ old('heure_depart', $trajet->heure_depart->format('H:i')) }}" 
-                       class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-            <div class="mb-4">
-                <label class="block text-gray-700 font-medium mb-2">Heure d'arrivée</label>
-                <input type="time" name="heure_arrivee" value="{{ old('heure_arrivee', $trajet->heure_arrivee->format('H:i')) }}" 
-                       class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-gray-700 font-medium mb-2">Prix (FCFA)</label>
-                <input type="number" name="prix" value="{{ old('prix', $trajet->prix) }}" 
-                       class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" 
-                       min="0" step="100" required>
-            </div>
-        </div>
-        
-        <div class="flex justify-end gap-3 mt-4">
-            <a href="{{ route('admin.trajets.index') }}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
-                Annuler
-            </a>
-            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
-                Mettre à jour
-            </button>
-        </div>
-    </form>
 </div>
+
+<style>
+    /* Style pour les options des selects au survol */
+    select option:hover,
+    select option:focus,
+    select option:checked {
+        background: #f97316 !important;
+        color: white !important;
+    }
+    
+    /* Pour Chrome/Safari/Edge */
+    select:focus option:checked,
+    select:focus option:hover {
+        background: #f97316 !important;
+        color: white !important;
+    }
+    
+    /* Style pour les inputs date et time */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+    }
+    
+    input[type="date"]::-webkit-datetime-edit-text,
+    input[type="date"]::-webkit-datetime-edit-month-field,
+    input[type="date"]::-webkit-datetime-edit-day-field,
+    input[type="date"]::-webkit-datetime-edit-year-field,
+    input[type="time"]::-webkit-datetime-edit-hour-field,
+    input[type="time"]::-webkit-datetime-edit-minute-field,
+    input[type="time"]::-webkit-datetime-edit-ampm-field {
+        color: white;
+    }
+    
+    /* Pour Firefox */
+    input[type="date"], 
+    input[type="time"] {
+        color-scheme: dark;
+    }
+</style>
 @endsection
