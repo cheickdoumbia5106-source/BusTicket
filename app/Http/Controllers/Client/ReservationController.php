@@ -6,9 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Siege;
 use App\Models\Trajet;
+use App\Models\Paiement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class ReservationController extends Controller
 {
@@ -109,10 +114,80 @@ class ReservationController extends Controller
             ]);
         }
 
-        // Rediriger vers le paiement
-        return redirect()->route('paiement.process', [
-            'reservation' => $reservation->id,
-            'mode' => $request->mode_paiement
-        ]);
+        // Générer un transaction_id unique
+        $transactionId = $request->mode_paiement === 'simule' 
+            ? 'SIM_' . strtoupper(Str::random(15)) . '_' . time()
+            : null;
+
+        // Créer le paiement avec TOUS les champs requis
+        $paiementData = [
+            'reservation_id' => $reservation->id,
+            'montant' => $temp['montant_total'], // AJOUTER LE MONTANT
+            'mode_paiement' => $request->mode_paiement,
+            'statut' => $request->mode_paiement === 'simule' ? 'paye' : 'en_attente',
+            'transaction_id' => $transactionId,
+            'date_paiement' => $request->mode_paiement === 'simule' ? now() : null, // AJOUTER LA DATE
+        ];
+        
+        $paiement = Paiement::create($paiementData);
+
+        // Nettoyer la session
+        session()->forget('reservation_temp');
+
+        // Si le paiement est simulé, envoyer l'email
+        if ($request->mode_paiement === 'simule') {
+            $this->sendTicketEmail($reservation);
+        }
+
+        return redirect()->route('reservation.confirmation', $reservation)->with('success', 'Réservation effectuée avec succès !');
+    }
+
+    public function confirmation(Reservation $reservation)
+    {
+        // Vérifier que la réservation appartient à l'utilisateur connecté
+        if ($reservation->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $reservation->load(['trajet.villeDepart', 'trajet.villeArrivee', 'trajet.bus', 'sieges', 'paiement']);
+
+        return view('client.reservation-confirmation', compact('reservation'));
+    }
+
+    public function downloadTicket(Reservation $reservation)
+    {
+        // Vérifier que la réservation appartient à l'utilisateur connecté
+        if ($reservation->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $reservation->load(['trajet.villeDepart', 'trajet.villeArrivee', 'trajet.bus', 'sieges', 'user', 'paiement']);
+
+        $pdf = PDF::loadView('pdf.ticket', compact('reservation'));
+        
+        return $pdf->download('Ticket_' . $reservation->reference . '.pdf');
+    }
+
+    private function sendTicketEmail($reservation)
+    {
+        try {
+            $reservation->load(['trajet.villeDepart', 'trajet.villeArrivee', 'trajet.bus', 'sieges', 'user', 'paiement']);
+            
+            // Générer le PDF
+            $pdf = PDF::loadView('pdf.ticket', compact('reservation'));
+            
+            // Envoyer l'email avec le PDF en pièce jointe
+            Mail::send('emails.ticket', ['reservation' => $reservation], function($message) use ($reservation, $pdf) {
+                $message->to($reservation->user->email, $reservation->user->name)
+                        ->subject('Votre ticket BusTicket - ' . $reservation->reference)
+                        ->attachData($pdf->output(), 'Ticket_' . $reservation->reference . '.pdf', [
+                            'mime' => 'application/pdf',
+                        ]);
+            });
+            
+            Log::info('Ticket email sent to: ' . $reservation->user->email);
+        } catch (\Exception $e) {
+            Log::error('Failed to send ticket email: ' . $e->getMessage());
+        }
     }
 }

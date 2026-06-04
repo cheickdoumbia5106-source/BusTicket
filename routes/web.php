@@ -45,6 +45,9 @@ Route::middleware(['auth'])->group(function () {
     // Ticket
     Route::get('/ticket/{reservation}', [TicketController::class, 'show'])->name('ticket.show');
     Route::get('/ticket/{reservation}/download', [TicketController::class, 'download'])->name('ticket.download');
+    Route::get('reservation/download/{reservation}', [ReservationController::class, 'downloadTicket'])
+        ->name('reservation.download-ticket');
+    Route::get('/confirmation/{reservation}', [ReservationController::class, 'confirmation'])->name('reservation.confirmation');
     
     // Profil utilisateur
     Route::get('/mon-compte', [ProfileController::class, 'index'])->name('profile');
